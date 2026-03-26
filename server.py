@@ -12,7 +12,7 @@ def home():
 def download():
     global download_count
     download_count += 1
-    return send_file("pack.zip", as_attachment=True)
+    return send_file("Pack.zip", as_attachment=True)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
